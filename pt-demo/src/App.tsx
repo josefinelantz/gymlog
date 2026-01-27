@@ -1,6 +1,6 @@
 export default function App() {
   return (
-    <div className="min-h-screen bg-red-500 text-white grid place-items-center">
+    <div className="min-h-screen bg-zinc-900 text-white grid place-items-center">
       <div className="rounded-2xl bg-zinc-800 p-6">
         <div className="text-2xl font-semibold">Tailwind works ✅</div>
         <div className="mt-2 text-zinc-300">If it’s dark and centered, we’re good.</div>
