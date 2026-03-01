@@ -1,71 +1,49 @@
-import type { Client, Exercise, LogEntry, Trainer, Workout } from "../types";
+import type { Client, Exercise, Workout, WorkoutLog } from "../types";
 
-export const demoTrainer: Trainer = {
-  id: "t1",
-  name: "Alex PT",
-};
-
-export const demoClient: Client = {
-  id: "c1",
-  name: "Anna",
-  trainerId: demoTrainer.id,
-};
+export const demoClients: Client[] = [
+  { id: "c1", name: "Anna" },
+];
 
 export const demoExercises: Exercise[] = [
+  { id: "e1", name: "Squat" },
+  { id: "e2", name: "Bench Press" },
+];
+
+export const demoWorkouts: Workout[] = [
   {
-    id: "e1",
-    trainerId: demoTrainer.id,
-    name: "Squat",
-    notes: "Focus on depth & bracing.",
-    videoUrl: "https://www.youtube.com/watch?v=SW_C1A-rejs",
-  },
-  {
-    id: "e2",
-    trainerId: demoTrainer.id,
-    name: "Bench Press",
-    notes: "Shoulder blades back and down.",
-    videoUrl: "https://www.youtube.com/watch?v=rT7DgCr-3pg",
+    id: "w1",
+    clientId: "c1",
+    name: "Lower Body",
+    items: [
+      {
+        id: "wi1",
+        exerciseId: "e1",
+        targetSets: 3,
+        targetReps: 8,
+        targetWeightKg: 40,
+      },
+    ],
   },
 ];
 
-export const demoWorkout: Workout = {
-  id: "w1",
-  name: "Lower Body",
-  trainerId: demoTrainer.id,
-  items: [
-    {
-      id: "we1",
-      exerciseId: "e1",
-      setsTarget: 3,
-      repsTarget: 8,
-    },
-  ],
-};
-
-export const demoLogs: LogEntry[] = [
+export const demoWorkoutLogs: WorkoutLog[] = [
   {
-    id: "l1",
-    clientId: demoClient.id,
-    workoutId: demoWorkout.id,
-    exerciseId: "e1",
-    dateISO: isoDaysAgo(10),
-    sets: 3,
-    reps: 8,
-    weightKg: 40,
-  },
-  {
-    id: "l2",
-    clientId: demoClient.id,
-    workoutId: demoWorkout.id,
-    exerciseId: "e1",
-    dateISO: isoDaysAgo(3),
-    sets: 3,
-    reps: 8,
-    weightKg: 45,
+    id: "log1",
+    workoutId: "w1",
+    clientId: "c1",
+    dateISO: isoDaysAgo(7),
+    items: [
+      {
+        workoutItemId: "wi1",
+        actualSets: 3,
+        actualReps: 8,
+        actualWeightKg: 45,
+      },
+    ],
   },
 ];
 
-function isoDaysAgo(days: number): string {
+function isoDaysAgo(days: number) {
   const d = new Date();
   d.setDate(d.getDate() - days);
   return d.toISOString().slice(0, 10);
