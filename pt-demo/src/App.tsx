@@ -1,108 +1,190 @@
 import { useMemo, useState } from "react";
 import "./index.css";
-import type { Exercise, LogEntry, ViewMode, Workout, WorkoutExercise } from "./types";
+
+import type {
+  Client,
+  Exercise,
+  Workout,
+  WorkoutLog,
+  Screen,
+} from "./types";
+
+import {
+  demoClients,
+  demoExercises,
+  demoWorkouts,
+  demoWorkoutLogs,
+} from "./data/demoData";
+
+import { PTHome } from "./pages/PTHome";
+import { CreateClient } from "./pages/CreateClient";
+import { ExerciseLibrary } from "./pages/ExerciseLibrary";
+import { ClientProfile } from "./pages/ClientProfile";
+import { ClientLog } from "./pages/ClientLog";
 import { TopBar } from "./components/TopBar";
-import { TrainerView } from "./pages/TrainerView";
-import { ClientView } from "./pages/ClientView";
-import { demoClient, demoExercises, demoLogs, demoTrainer, demoWorkout } from "./data/demoData";
-import { Toast } from "./components/Toast";
 
 export default function App() {
-  const [mode, setMode] = useState<ViewMode>("trainer");
-
-  const [exercises, setExercises] = useState<Exercise[]>(demoExercises);
-  const [workout, setWorkout] = useState<Workout>(demoWorkout);
-  const [logs, setLogs] = useState<LogEntry[]>(demoLogs);
-
-  const [toastOpen, setToastOpen] = useState(false);
-
-  const exerciseOptions = useMemo(() => exercises.filter((e) => !e.archived), [exercises]);
-
-  const [selectedExerciseId, setSelectedExerciseId] = useState<string>(() => {
-    // Prefer Squat in demo; fallback to first exercise
-    const squat = demoExercises.find((e) => e.name.toLowerCase() === "squat")?.id;
-    return squat ?? demoExercises[0]?.id ?? "e1";
+  const [screen, setScreen] = useState<Screen>({
+    mode: "pt",
+    name: "home",
   });
 
-  function createExercise(ex: Exercise) {
-    setExercises((prev) => [ex, ...prev]);
-    // If this is the first exercise ever, select it
-    setSelectedExerciseId((prev) => prev || ex.id);
+  const [clients, setClients] = useState<Client[]>(demoClients);
+  const [exercises, setExercises] = useState<Exercise[]>(demoExercises);
+  const [workouts, setWorkouts] = useState<Workout[]>(demoWorkouts);
+  const [workoutLogs, setWorkoutLogs] =
+    useState<WorkoutLog[]>(demoWorkoutLogs);
+
+  function rid() {
+    return Math.random().toString(16).slice(2);
   }
 
-  function addExerciseToWorkout(exerciseId: string) {
-    // prevent duplicates
-    if (workout.items.some((it) => it.exerciseId === exerciseId)) return;
+  function createClient(name: string) {
+    const client: Client = { id: `c_${rid()}`, name };
+    setClients((prev) => [client, ...prev]);
+    setScreen({ mode: "pt", name: "client", clientId: client.id });
+  }
 
-    const nextItem: WorkoutExercise = {
-      id: `we_${cryptoRandomId()}`,
-      exerciseId,
-      setsTarget: 3,
-      repsTarget: 8,
+  function createWorkout(clientId: string) {
+    const workout: Workout = {
+      id: `w_${rid()}`,
+      clientId,
+      name: "New Workout",
+      items: [],
     };
-
-    setWorkout((prev) => ({ ...prev, items: [...prev.items, nextItem] }));
-  }
-
-  function saveLogs(newLogs: LogEntry[]) {
-    // Upsert by (date + client + exercise) for demo convenience
-    setLogs((prev) => {
-      const next = [...prev];
-      for (const nl of newLogs) {
-        const idx = next.findIndex(
-          (l) =>
-            l.clientId === nl.clientId &&
-            l.exerciseId === nl.exerciseId &&
-            l.dateISO === nl.dateISO
-        );
-        if (idx >= 0) next[idx] = nl;
-        else next.push(nl);
-      }
-      return next;
+    setWorkouts((prev) => [...prev, workout]);
+    setScreen({
+      mode: "pt",
+      name: "editWorkout",
+      clientId,
+      workoutId: workout.id,
     });
   }
 
-  function onSavedToast() {
-    setToastOpen(true);
+  function saveWorkout(updated: Workout) {
+    setWorkouts((prev) =>
+      prev.map((w) => (w.id === updated.id ? updated : w))
+    );
+    setScreen({
+      mode: "pt",
+      name: "client",
+      clientId: updated.clientId,
+    });
   }
+
+  function saveWorkoutLog(log: WorkoutLog) {
+    setWorkoutLogs((prev) => [...prev, log]);
+    setScreen({
+      mode: "client",
+      name: "home",
+      clientId: log.clientId,
+    });
+  }
+
+  const currentClient =
+    "clientId" in screen
+      ? clients.find((c) => c.id === screen.clientId)
+      : undefined;
+
+  const clientWorkouts =
+    currentClient
+      ? workouts.filter((w) => w.clientId === currentClient.id)
+      : [];
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <TopBar
-        mode={mode}
-        onChangeMode={setMode}
-        brandName="DemoFit"
-        tagline="Whitelabel-style PT demo"
+        title={screen.mode === "pt" ? "PT" : "Client"}
+        rightAction={{
+          label: screen.mode === "pt" ? "Client mode" : "PT mode",
+          onClick: () =>
+            setScreen((prev) => ({
+              ...prev,
+              mode: prev.mode === "pt" ? "client" : "pt",
+            })),
+        }}
       />
 
-      {mode === "trainer" ? (
-        <TrainerView
-          trainer={demoTrainer}
-          client={demoClient}
-          exercises={exerciseOptions}
-          workout={workout}
-          logs={logs}
-          selectedExerciseId={selectedExerciseId}
-          onChangeSelectedExerciseId={setSelectedExerciseId}
-          onCreateExercise={createExercise}
-          onAddExerciseToWorkout={addExerciseToWorkout}
-          onUpdateWorkout={setWorkout}
-        />
-      ) : (
-        <ClientView
-          client={demoClient}
-          workout={workout}
-          exercises={exerciseOptions}
-          onSaveLogs={saveLogs}
-          onSaved={onSavedToast}
+      {/* PT MODE */}
+      {screen.mode === "pt" && screen.name === "home" && (
+        <PTHome
+          clients={clients}
+          onNewClient={() =>
+            setScreen({ mode: "pt", name: "home" }) || setScreen({ mode: "pt", name: "home" })
+          }
+          onGoClient={(id) =>
+            setScreen({ mode: "pt", name: "client", clientId: id })
+          }
+          onGoExerciseLibrary={() =>
+            setScreen({ mode: "pt", name: "home" })
+          }
         />
       )}
 
-      <Toast message="Saved ✅" open={toastOpen} onClose={() => setToastOpen(false)} />
+      {/* PT CLIENT */}
+      {screen.mode === "pt" &&
+        screen.name === "client" &&
+        currentClient && (
+          <ClientProfile
+            client={currentClient}
+            workouts={clientWorkouts}
+            onNewWorkout={() => createWorkout(currentClient.id)}
+            onEditWorkout={(workoutId) =>
+              setScreen({
+                mode: "pt",
+                name: "editWorkout",
+                clientId: currentClient.id,
+                workoutId,
+              })
+            }
+          />
+        )}
+
+      {/* EDIT WORKOUT */}
+      {screen.mode === "pt" &&
+        screen.name === "editWorkout" &&
+        currentClient && (
+          <ClientLog
+            client={currentClient}
+            exercises={exercises}
+            workout={
+              workouts.find((w) => w.id === screen.workoutId)!
+            }
+            onSaveWorkout={saveWorkout}
+          />
+        )}
+
+      {/* CLIENT MODE */}
+      {screen.mode === "client" &&
+        screen.name === "home" &&
+        currentClient && (
+          <ClientProfile
+            client={currentClient}
+            workouts={clientWorkouts}
+            onNewWorkout={() => {}}
+            onEditWorkout={(workoutId) =>
+              setScreen({
+                mode: "client",
+                name: "workout",
+                clientId: currentClient.id,
+                workoutId,
+              })
+            }
+          />
+        )}
+
+      {screen.mode === "client" &&
+        screen.name === "workout" &&
+        currentClient && (
+          <ClientLog
+            client={currentClient}
+            exercises={exercises}
+            workout={
+              workouts.find((w) => w.id === screen.workoutId)!
+            }
+            onSaveLog={saveWorkoutLog}
+          />
+        )}
     </div>
   );
-}
-
-function cryptoRandomId(): string {
-  return Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2);
 }
