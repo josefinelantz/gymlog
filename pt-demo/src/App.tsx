@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import "./index.css";
 
-import type { Client, Exercise, Screen, Workout, WorkoutLog } from "./types";
-import { demoClients, demoExercises, demoWorkouts, demoWorkoutLogs } from "./data/demoData";
+import type { Client, Exercise, Screen, Workout, WorkoutLog, FocusArea } from "./types";
+import { demoClients, demoExercises, demoWorkouts, demoWorkoutLogs, demoFocusAreas } from "./data/demoData";
 
 import { TopBar } from "./components/TopBar";
 
@@ -20,6 +20,7 @@ export default function App() {
 
   const [clients, setClients] = useState<Client[]>(demoClients);
   const [exercises, setExercises] = useState<Exercise[]>(demoExercises);
+  const [focusAreas, setFocusAreas] = useState<FocusArea[]>(demoFocusAreas);
   const [workouts, setWorkouts] = useState<Workout[]>(demoWorkouts);
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>(demoWorkoutLogs);
 
@@ -126,9 +127,38 @@ export default function App() {
     setWorkouts((prev) => prev.map((w) => (w.id === updated.id ? updated : w)));
   }
 
-  function saveWorkoutLog(log: WorkoutLog) {
-    setWorkoutLogs((prev) => [...prev, log]);
+    function saveWorkoutLog(log: WorkoutLog) {
+    setWorkoutLogs((prev) => {
+      const idx = prev.findIndex(
+        (x) => x.clientId === log.clientId && x.workoutId === log.workoutId && x.dateISO === log.dateISO
+      );
+      if (idx === -1) return [...prev, log];
+      const next = prev.slice();
+      next[idx] = log;
+      return next;
+    });
   }
+
+  function addFocusArea(name: string): string {
+  const fa: FocusArea = { id: `f_${rid()}`, name };
+  setFocusAreas((prev) => [fa, ...prev]);
+  return fa.id;
+}
+
+function updateFocusArea(id: string, name: string) {
+  setFocusAreas((prev) => prev.map((f) => (f.id === id ? { ...f, name } : f)));
+}
+
+function deleteFocusArea(id: string) {
+  setFocusAreas((prev) => prev.filter((f) => f.id !== id));
+  // optional: also clear references in workouts
+  setWorkouts((prev) =>
+    prev.map((w) => ({
+      ...w,
+      items: w.items.map((it) => (it.focusAreaId === id ? { ...it, focusAreaId: undefined } : it)),
+    }))
+  );
+}
 
   // -------- Derived --------
 
@@ -181,9 +211,13 @@ export default function App() {
       {screen.mode === "pt" && screen.name === "exerciseLibrary" ? (
         <ExerciseLibrary
           exercises={exercises}
+          focusAreas={focusAreas}
           onAddExercise={(name, notes) => {
             addExercise(name, notes);
           }}
+          onAddFocusArea={(name) => addFocusArea(name)}
+          onUpdateFocusArea={(id, name) => updateFocusArea(id, name)}
+          onDeleteFocusArea={(id) => deleteFocusArea(id)}
         />
       ) : null}
 
@@ -213,6 +247,7 @@ export default function App() {
           <WorkoutEditor
             workout={w}
             exercises={exercises}
+            focusAreas={focusAreas}
             onCreateExerciseInline={(name) => addExercise(name)}
             onSave={(updated) => {
               // ✅ Spara men stanna kvar i editorn
@@ -255,6 +290,7 @@ export default function App() {
             client={client}
             workout={w}
             exercises={exercises}
+            logs={workoutLogs.filter((l) => l.clientId === client.id)}
             onSave={(log) => {
               saveWorkoutLog(log);
               goClientHome(client.id);

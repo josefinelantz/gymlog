@@ -3,7 +3,7 @@ import { AddExerciseForm } from "../components/AddExerciseForm";
 import { ClientCard } from "../components/ClientCard";
 import { ExerciseList } from "../components/ExerciseList";
 import { ProgressChart } from "../components/ProgressChart";
-import { WorkoutEditor } from "../components/WorkoutEditor";
+import { WorkoutEditor } from "./WorkoutEditor";
 
 type Props = {
   trainer: Trainer;

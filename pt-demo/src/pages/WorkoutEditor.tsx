@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Exercise, Workout, WorkoutItem } from "../types";
+import type { Exercise, FocusArea, Workout, WorkoutItem } from "../types";
 
 export function WorkoutEditor({
   workout,
-  exercises,
+    exercises,
+  focusAreas,
   onSave,
   onDone,
   onCreateExerciseInline,
 }: {
   workout: Workout;
   exercises: Exercise[];
+  focusAreas: FocusArea[];
   onSave: (workout: Workout) => void; // save draft while staying here
   onDone: (workout: Workout) => void; // user explicitly finishes editing
   onCreateExerciseInline: (name: string) => string; // returns new exerciseId
@@ -157,7 +159,21 @@ export function WorkoutEditor({
                   Remove
                 </button>
               </div>
-
+              <div className="mt-3">
+                <div className="text-xs text-zinc-500">Focus</div>
+                <select
+                  value={it.focusAreaId ?? ""}
+                  onChange={(e) => updateItem(it.id, { focusAreaId: e.target.value || undefined })}
+                  className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold"
+                >
+                  <option value="">—</option>
+                  {focusAreas.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 <Num
                   label="Sets"

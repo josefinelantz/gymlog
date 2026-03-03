@@ -22,6 +22,7 @@ export type WorkoutItem = {
   targetSets: number;
   targetReps: number;
   targetWeightKg?: number;
+  focusAreaId?: string; 
 };
 
 export type Workout = {
@@ -36,6 +37,7 @@ export type WorkoutItemLog = {
   actualSets: number;
   actualReps: number;
   actualWeightKg: number;
+  clientNote?: string; 
 };
 
 export type WorkoutLog = {
@@ -45,3 +47,9 @@ export type WorkoutLog = {
   dateISO: string;
   items: WorkoutItemLog[];
 };
+
+export type FocusArea = {
+  id: string;
+  name: string;
+};
+

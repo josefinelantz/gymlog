@@ -9,6 +9,12 @@ export const demoExercises: Exercise[] = [
   { id: "e2", name: "Bench Press" },
 ];
 
+export const demoFocusAreas: FocusArea[] = [
+  { id: "f1", name: "Stability" },
+  { id: "f2", name: "Mobility" },
+  { id: "f3", name: "Technique" },
+];
+
 export const demoWorkouts: Workout[] = [
   {
     id: "w1",

@@ -1,12 +1,20 @@
 import { useMemo, useState } from "react";
-import type { Exercise } from "../types";
+import type { Exercise, FocusArea } from "../types";
 
 export function ExerciseLibrary({
   exercises,
+  focusAreas,
   onAddExercise,
+  onAddFocusArea,
+  onUpdateFocusArea,
+  onDeleteFocusArea,
 }: {
   exercises: Exercise[];
+  focusAreas: FocusArea[];
   onAddExercise: (name: string, notes?: string) => void;
+  onAddFocusArea: (name: string) => void; 
+  onUpdateFocusArea: (id: string, name: string) => void; 
+  onDeleteFocusArea: (id: string) => void; 
 }) {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
