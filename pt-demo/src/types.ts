@@ -1,10 +1,16 @@
+export type Mode = "pt" | "client";
 export type Screen =
+  // PT screens
   | { mode: "pt"; name: "home" }
+  | { mode: "pt"; name: "createClient" }
+  | { mode: "pt"; name: "exerciseLibrary" }
   | { mode: "pt"; name: "client"; clientId: string }
-  | { mode: "pt"; name: "editWorkout"; clientId: string; workoutId: string }
+  | { mode: "pt"; name: "workoutEditor"; clientId: string; workoutId: string }
+
+  // Client screens
   | { mode: "client"; name: "home"; clientId: string }
   | { mode: "client"; name: "workout"; clientId: string; workoutId: string };
-
+  
 export type Client = {
   id: string;
   name: string;

@@ -1,4 +1,4 @@
-import type { Client, Exercise, Workout, WorkoutLog } from "../types";
+import type { Client, Exercise, Workout, WorkoutLog, FocusArea } from "../types";
 
 export const demoClients: Client[] = [
   { id: "c1", name: "Anna" },
